@@ -1,10 +1,11 @@
+{% set client_not_filter = 63 %}
+{% set fields_show_customers = ["first_name", "last_name"] %}
 
-  create view "erp_oltp"."public"."customers__dbt_tmp" as (
-    with customers as (
- select * from "erp_oltp"."public"."stg_customers"
+with customers as (
+ select * from {{ ref('stg_customers')}}
 ),
 orders as (
- select * from "erp_oltp"."public"."stg_orders"
+ select * from {{ ref('stg_orders')}}
 ),
 customer_orders as (
  select
@@ -18,16 +19,16 @@ customer_orders as (
 final as (
   select
     customers.customer_id,
-    customers.first_name,
-    customers.last_name,
+    {%- for fields_show in fields_show_customers %}
+    customers.{{fields_show}},
+    {%- endfor %}
     customer_orders.first_order_date,
     customer_orders.most_recent_order_date,
     coalesce(customer_orders.number_of_orders, 0) as number_of_orders,
     customers.state
   from customers
   left join customer_orders using (customer_id)
-  WHERE customer_id != 63
+  WHERE customer_id != {{client_not_filter}}
 )
 
 select * from final
-  );

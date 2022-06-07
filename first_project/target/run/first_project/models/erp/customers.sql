@@ -1,8 +1,13 @@
+
+  create view "erp_oltp"."public"."customers__dbt_tmp" as (
+    
+
+
 with customers as (
- select * from {{ ref('stg_customers')}}
+ select * from "erp_oltp"."public"."stg_customers"
 ),
 orders as (
- select * from {{ ref('stg_orders')}}
+ select * from "erp_oltp"."public"."stg_orders"
 ),
 customer_orders as (
  select
@@ -16,8 +21,11 @@ customer_orders as (
 final as (
   select
     customers.customer_id,
+    
     customers.first_name,
+    
     customers.last_name,
+    
     customer_orders.first_order_date,
     customer_orders.most_recent_order_date,
     coalesce(customer_orders.number_of_orders, 0) as number_of_orders,
@@ -28,3 +36,4 @@ final as (
 )
 
 select * from final
+  );
